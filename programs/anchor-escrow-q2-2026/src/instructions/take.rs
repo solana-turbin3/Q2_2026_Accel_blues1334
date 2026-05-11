@@ -63,7 +63,7 @@ impl<'info> Take<'info> {
             mint: self.mint_b.to_account_info(),
         };
 
-        let cpi_ctx = CpiContext::new(self.token_program.key(), cpi_accounts);
+        let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), cpi_accounts);
 
         transfer_checked(cpi_ctx, self.escrow.receive, self.mint_b.decimals)
     }
@@ -77,7 +77,7 @@ impl<'info> Take<'info> {
             &[self.escrow.bump]
         ]];
 
-        let cpi_program = self.token_program.key();
+        let cpi_program = self.token_program.to_account_info();
 
         let cpi_accounts = TransferChecked {
             from: self.vault.to_account_info(),
@@ -86,7 +86,7 @@ impl<'info> Take<'info> {
             mint: self.mint_a.to_account_info(),
         };
 
-        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer_seeds);
+        let cpi_context = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts, &signer_seeds);
 
         transfer_checked(cpi_context, self.vault.amount, self.mint_a.decimals)?;
 
@@ -96,7 +96,7 @@ impl<'info> Take<'info> {
             authority: self.escrow.to_account_info(),
         };
 
-        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, &signer_seeds);
+        let cpi_context = CpiContext::new_with_signer(self.token_program.to_account_info(), cpi_accounts, &signer_seeds);
 
         close_account(cpi_context)
     }

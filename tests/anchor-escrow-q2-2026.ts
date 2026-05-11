@@ -1,7 +1,6 @@
 import * as anchor from "@anchor-lang/core";
 import { Program } from "@anchor-lang/core";
-import { AnchorEscrowQ22026 } from "../target/types/anchor_escrow_q2_2026";
-import { Commitment, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } from "@solana/web3.js";
+import web3 from "@solana/web3.js";
 import {
   TOKEN_PROGRAM_ID,
   createMint,
@@ -9,13 +8,19 @@ import {
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from "@solana/spl-token";
-import NodeWallet from "@anchor-lang/core/dist/cjs/nodewallet";
 import { BN } from "bn.js";
 import { randomBytes } from "crypto";
-import { ASSOCIATED_PROGRAM_ID } from "@anchor-lang/core/dist/cjs/utils/token";
 import { expect } from "chai";
+import { readFileSync } from "fs";
+import path from "path";
 
-const commitment: Commitment = "confirmed";
+const { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } = web3;
+
+const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
+  "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+);
+
+const commitment: "processed" | "confirmed" | "finalized" = "confirmed";
 
 describe("anchor-escrow-q2-2026", () => {
   const confirmTx = async (signature: string) => {
@@ -36,29 +41,33 @@ describe("anchor-escrow-q2-2026", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.anchorEscrowQ22026 as Program<AnchorEscrowQ22026>;
+  const idlPath = path.join(process.cwd(), "target", "idl", "anchor_escrow_q2_2026.json");
+  const programId = new PublicKey("d5Yda6GmqiHgyhf9skzY3ffFRu3Ku9hhqNEToPguytW");
+  const idl = JSON.parse(readFileSync(idlPath, "utf8"));
+  (idl as any).address = programId.toBase58();
+  const program = new Program(idl, provider);
 
   const connection = provider.connection;
   
-  const payer = provider.wallet as NodeWallet;
+  const payer = provider.wallet as any;
   const taker = Keypair.generate();
 
-  let mintA : PublicKey;
-  let mintB : PublicKey;
+  let mintA : web3.PublicKey;
+  let mintB : web3.PublicKey;
 
-  let makerAtaA: PublicKey;
-  let makerAtaB: PublicKey;
+  let makerAtaA: web3.PublicKey;
+  let makerAtaB: web3.PublicKey;
 
-  let takerAtaA: PublicKey;
-  let takerAtaB: PublicKey;
+  let takerAtaA: web3.PublicKey;
+  let takerAtaB: web3.PublicKey;
 
-  let vault: PublicKey;
+  let vault: web3.PublicKey;
 
   const seed = new BN(randomBytes(8));
 
   const escrow = PublicKey.findProgramAddressSync([
     Buffer.from("escrow"), payer.publicKey.toBuffer(), seed.toBuffer("le", 8)
-  ], program.programId)[0];
+  ], programId)[0];
 
   it("Request airdrop to taker!", async () => {
     await Promise.all([payer, taker].map(async (k) => {
@@ -162,7 +171,7 @@ describe("anchor-escrow-q2-2026", () => {
       escrow: escrow,
       vault: vault,
       tokenProgram: TOKEN_PROGRAM_ID,
-      associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     })
     .rpc();
@@ -179,13 +188,38 @@ describe("anchor-escrow-q2-2026", () => {
 
   it("Refund!", async () => {
 
+    const refundSeed = new BN(randomBytes(8));
+    const refundEscrow = PublicKey.findProgramAddressSync([
+      Buffer.from("escrow"), payer.publicKey.toBuffer(), refundSeed.toBuffer("le", 8)
+    ], program.programId)[0];
+    const refundVault = getAssociatedTokenAddressSync(mintA, refundEscrow, true);
+
+    const makeTx = await program.methods.make(
+      refundSeed,
+      new BN(1_000_000),
+      new BN(1_000_000),
+    ).accountsStrict({
+      maker: payer.publicKey,
+      mintA: mintA,
+      mintB: mintB,
+      makerAtaA: makerAtaA,
+      escrow: refundEscrow,
+      vault: refundVault,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    })
+    .rpc();
+
+    await confirmTx(makeTx)
+
     const tx = await program.methods.refund(
     ).accountsPartial({
       maker: provider.publicKey,
       mintA: mintA,
       makerAtaA: makerAtaA,
-      vault: vault,
-      escrow: escrow,
+      vault: refundVault,
+      escrow: refundEscrow,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     })
@@ -193,9 +227,10 @@ describe("anchor-escrow-q2-2026", () => {
 
     await confirmTx(tx)
     
-    expect(await provider.connection.getBalance(vault)).to.equal(0);
-    const vaultStateInfo = await provider.connection.getAccountInfo(vault);
+    const vaultStateInfo = await provider.connection.getAccountInfo(refundVault);
     expect(vaultStateInfo).to.be.null;
+    const escrowStateInfo = await provider.connection.getAccountInfo(refundEscrow);
+    expect(escrowStateInfo).to.be.null;
     console.log("Refund tx", tx);
   });
 
@@ -213,7 +248,7 @@ describe("anchor-escrow-q2-2026", () => {
       takerAtaB: takerAtaB,
       escrow: escrow,
       tokenProgram: TOKEN_PROGRAM_ID,
-      associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     })
     .signers([taker])
@@ -221,9 +256,10 @@ describe("anchor-escrow-q2-2026", () => {
 
     await confirmTx(tx)
 
-    expect(await provider.connection.getBalance(vault)).to.equal(0);
     const vaultStateInfo = await provider.connection.getAccountInfo(vault);
     expect(vaultStateInfo).to.be.null;
+    const escrowStateInfo = await provider.connection.getAccountInfo(escrow);
+    expect(escrowStateInfo).to.be.null;
     console.log("Take tx", tx);
   });
 });

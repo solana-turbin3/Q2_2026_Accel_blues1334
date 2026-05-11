@@ -71,7 +71,7 @@ impl<'info> Make<'info> {
             authority: self.maker.to_account_info()
         };
 
-        let cpi_ctx = CpiContext::new(self.token_program.key(), transfer_accounts);
+        let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), transfer_accounts);
 
         transfer_checked(cpi_ctx, deposit, self.mint_a.decimals)
     }

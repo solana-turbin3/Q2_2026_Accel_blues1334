@@ -7,7 +7,7 @@ pub use constants::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("DfYWchGLtTmd1aVvQkL2Rpvz7SnvKN8dBhzDFhaj3MBm");
+declare_id!("d5Yda6GmqiHgyhf9skzY3ffFRu3Ku9hhqNEToPguytW");
 
 #[program]
 pub mod anchor_escrow_q2_2026 {
