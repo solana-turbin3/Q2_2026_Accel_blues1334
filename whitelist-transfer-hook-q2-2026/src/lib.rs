@@ -49,6 +49,10 @@ pub mod whitelist_transfer_hook_q2 {
         Ok(())
     }
 
+    pub fn initialize_mint(ctx: Context<TokenFactory>) -> Result<()> {
+        ctx.accounts.initialize_mint()
+    }
+
     #[instruction(discriminator = ExecuteInstruction::SPL_DISCRIMINATOR_SLICE)]
     pub fn transfer_hook(ctx: Context<TransferHook>, amount: u64) -> Result<()> {
         // Call the transfer hook logic

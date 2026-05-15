@@ -4,7 +4,6 @@ use {
             self,
             instruction::{AccountMeta, Instruction},
             pubkey::Pubkey,
-            system_instruction,
         },
         InstructionData, ToAccountMetas,
     },
@@ -18,8 +17,8 @@ use {
         instruction::create_associated_token_account,
     },
     spl_token_2022_interface::{
-        extension::{transfer_hook::instruction::initialize as init_transfer_hook, ExtensionType},
-        instruction::{initialize_mint2, mint_to, transfer_checked},
+        extension::{BaseStateWithExtensions, StateWithExtensions, mint_close_authority::MintCloseAuthority},
+        instruction::{mint_to, transfer_checked},
         state::Mint,
         ID as TOKEN_2022_ID,
     },
@@ -98,36 +97,35 @@ fn test_full_flow() {
     );
     send(&mut svm, &[ix], &payer, &[&payer]).expect("remove_from_whitelist failed");
 
-    // Step 4: Create mint with TransferHook extension
+    // Step 4: Create mint with TransferHook + MintCloseAuthority (in-program)
     let mint = Keypair::new();
-    let mint_size =
-        ExtensionType::try_calculate_account_len::<Mint>(&[ExtensionType::TransferHook]).unwrap();
-    let mint_rent = svm.minimum_balance_for_rent_exemption(mint_size);
-
-    let create_mint_acct = system_instruction::create_account(
-        &payer.pubkey(),
-        &mint.pubkey(),
-        mint_rent,
-        mint_size as u64,
-        &TOKEN_2022_ID,
+    let ix = Instruction::new_with_bytes(
+        program_id,
+        &program::instruction::InitializeMint {}.data(),
+        program::accounts::TokenFactory {
+            user: payer.pubkey(),
+            mint: mint.pubkey(),
+            system_program: system_program_id,
+            token_program: TOKEN_2022_ID,
+        }
+        .to_account_metas(None),
     );
-    let init_hook = init_transfer_hook(
-        &TOKEN_2022_ID,
-        &mint.pubkey(),
-        Some(payer.pubkey()),
-        Some(program_id),
-    )
-    .unwrap();
-    let init_mint =
-        initialize_mint2(&TOKEN_2022_ID, &mint.pubkey(), &payer.pubkey(), None, 9).unwrap();
+    send(&mut svm, &[ix], &payer, &[&payer, &mint]).expect("initialize_mint failed");
 
-    send(
-        &mut svm,
-        &[create_mint_acct, init_hook, init_mint],
-        &payer,
-        &[&payer, &mint],
-    )
-    .expect("create mint with transfer hook failed");
+    let mint_account = svm
+        .get_account(&mint.pubkey())
+        .expect("mint account missing after initialization");
+    let mint_state = StateWithExtensions::<Mint>::unpack(&mint_account.data)
+        .expect("failed to unpack mint account");
+    let close_authority_ext = mint_state
+        .get_extension::<MintCloseAuthority>()
+        .expect("MintCloseAuthority extension missing");
+    let close_authority = Option::<Pubkey>::from(close_authority_ext.close_authority);
+    assert_eq!(
+        close_authority,
+        Some(payer.pubkey()),
+        "MintCloseAuthority should be set to payer"
+    );
 
     // Step 5: Create source/destination ATAs and mint 100 tokens to source
     let source_ata = get_associated_token_address_with_program_id(
