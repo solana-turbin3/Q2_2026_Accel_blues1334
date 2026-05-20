@@ -1,6 +1,6 @@
 [toolchain]
+anchor_version = "1.0.2"
 package_manager = "yarn"
-anchor_version = "0.31.1"
 
 [features]
 resolution = true
@@ -8,6 +8,7 @@ skip-lint = false
 
 [programs.localnet]
 anchor_escrow_q2_2026 = "d5Yda6GmqiHgyhf9skzY3ffFRu3Ku9hhqNEToPguytW"
+withelist_q2_2026 = "AsyYG7z3cNhF2rszsC96iNoZTdKwq4QhoSa9K3WgaSxp"
 
 [provider]
 cluster = "localnet"
