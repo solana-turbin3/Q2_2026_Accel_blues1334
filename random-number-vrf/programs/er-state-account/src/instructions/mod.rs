@@ -1,6 +1,9 @@
 pub mod init_user;
 pub use init_user::*;
 
+pub mod init_pda_user;
+pub use init_pda_user::*;
+
 pub mod update_user;
 pub use update_user::*;
 

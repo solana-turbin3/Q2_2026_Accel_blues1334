@@ -9,7 +9,7 @@ mod instructions;
 
 use instructions::*;
 
-declare_id!("GDd4rH5uGnCUikgZZXyVxQYJUA1Wd4RXW79YQAxVNqe7");
+declare_id!("5jt9ZcQz8iKsmtaXDXWgUs1V8AQqJnbNCMQGEALiJtHB");
 
 #[ephemeral]
 #[program]
@@ -20,6 +20,12 @@ pub mod er_state_account {
     pub fn initialize(ctx: Context<InitUser>) -> Result<()> {
         ctx.accounts.initialize(&ctx.bumps)?;
         
+        Ok(())
+    }
+
+    pub fn initialize_pda(ctx: Context<InitPdaUser>) -> Result<()> {
+        ctx.accounts.initialize(&ctx.bumps)?;
+
         Ok(())
     }
 

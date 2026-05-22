@@ -4,8 +4,6 @@ import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   GetCommitmentSignature,
   DELEGATION_PROGRAM_ID,
-  MAGIC_CONTEXT_ID,
-  MAGIC_PROGRAM_ID,
   delegateBufferPdaFromDelegatedAccountAndOwnerProgram,
   delegationMetadataPdaFromDelegatedAccount,
   delegationRecordPdaFromDelegatedAccount,
@@ -38,7 +36,7 @@ describe("er-state-account", () => {
   })
 
   const programId = new PublicKey(
-    "GDd4rH5uGnCUikgZZXyVxQYJUA1Wd4RXW79YQAxVNqe7"
+    "5jt9ZcQz8iKsmtaXDXWgUs1V8AQqJnbNCMQGEALiJtHB"
   );
 
   let program: Program;
@@ -107,7 +105,7 @@ describe("er-state-account", () => {
     try {
       const tx = await program.methods
         .delegate()
-        .accounts({
+        .accountsPartial({
           user: anchor.Wallet.local().publicKey,
           bufferUserAccount,
           delegationRecordUserAccount,
@@ -199,9 +197,6 @@ describe("er-state-account", () => {
         .updateCommit(new BN(43))
         .accountsPartial({
           user: providerEphemeralRollup.wallet.publicKey,
-          userAccount: userAccount,
-          magicProgram: MAGIC_PROGRAM_ID,
-          magicContext: MAGIC_CONTEXT_ID,
         })
         .rpc({ skipPreflight: false });
     } catch (e: any) {
@@ -234,9 +229,6 @@ describe("er-state-account", () => {
         .undelegate()
         .accountsPartial({
           user: providerEphemeralRollup.wallet.publicKey,
-          userAccount: userAccount,
-          magicProgram: MAGIC_PROGRAM_ID,
-          magicContext: MAGIC_CONTEXT_ID,
         })
         .rpc({ skipPreflight: false });
     } catch (e: any) {

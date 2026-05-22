@@ -1,22 +1,34 @@
 {
   "license": "ISC",
   "scripts": {
+    "cron:vrf": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' tuktuk/cron-vrf.ts",
+    "cron:vrf:devnet": "yarn cron:vrf --rpcUrl https://api.devnet.solana.com --walletPath /home/blues/PRJ-solana/turbin3/mbeta/solana-starter/ts/turbin3-wallet.json --queueName rnvrf-queue-v3 --cronName rnvrf-cron-v4 --schedule \"0 */1 * * * *\" --erProgramId 5jt9ZcQz8iKsmtaXDXWgUs1V8AQqJnbNCMQGEALiJtHB --cronTxIndex 0",
+    "crank:devnet": "bash -lc 'while true; do tuktuk-crank-turner -c ./tuktuk/crank-devnet.toml; echo \"crank-turner exited; restarting in 2s...\"; sleep 2; done'",
+    "test": "ANCHOR_PROVIDER_URL=https://api.devnet.solana.com ANCHOR_WALLET=~/.config/solana/id.json ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
+    "test:local": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
-    "@magicblock-labs/ephemeral-rollups-sdk": "^0.2.11"
+    "@helium/cron-sdk": "^0.0.8",
+    "@helium/tuktuk-idls": "^0.0.8",
+    "@helium/tuktuk-sdk": "^0.0.8",
+    "@magicblock-labs/ephemeral-rollups-sdk": "^0.2.11",
+    "axios": "^1.8.4"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
+    "@types/node": "^20.11.24",
     "chai": "^4.3.4",
     "mocha": "^9.0.3",
     "prettier": "^2.6.2",
+    "ts-node": "^10.9.2",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "yargs": "^17.7.2"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

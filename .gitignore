@@ -6,3 +6,9 @@ node_modules
 test-ledger
 .yarn
 .surfpool
+random-number-vrf/tuktuk/crank-devnet.toml
+*wallet.json
+id.json
+keypair.json
+*.keypair.json
+.env
