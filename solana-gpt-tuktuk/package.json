@@ -1,0 +1,27 @@
+{
+  "name": "solana-gpt-tuktuk",
+  "private": true,
+  "scripts": {
+    "test": "ts-node test.ts",
+    "cron": "ts-node scripts/cron.ts",
+    "check": "node scripts/check.mjs",
+    "debug": "node scripts/debug.mjs",
+    "wait": "node scripts/wait-callback.mjs",
+    "reset": "node scripts/reset.cjs",
+    "crank": "bash -lc 'while true; do tuktuk-crank-turner -c ./tuktuk/crank-devnet.toml; echo \"crank-turner exited; restarting in 2s...\"; sleep 2; done'"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.0",
+    "@helium/cron-sdk": "^0.0.10",
+    "@helium/tuktuk-sdk": "^0.0.10",
+    "@solana/web3.js": "^1.95.0",
+    "axios": "^1.13.5",
+    "bs58": "^5.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
