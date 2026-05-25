@@ -1,0 +1,16 @@
+# Tuktuk crank-turner config for solana-gpt-tuktuk on devnet.
+#
+# Run with:
+#   yarn crank
+#
+# Or directly:
+#   tuktuk-crank-turner -c tuktuk/crank-devnet.toml
+
+rpc_url = "https://devnet.helius-rpc.com/?api-key=b4790339-6d47-45d8-b387-5a8e7e317695"
+key_path = "~/.config/solana/id.json"
+
+# Minimum reward (lamports) this turner is willing to crank for.
+# Our task queue is created with minCrankReward=0 (see scripts/cron.ts),
+# so we accept zero here to pick up our own tasks while testing.
+# Raise this if you ever crank for paying queues.
+min_crank_fee = 0
