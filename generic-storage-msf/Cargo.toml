@@ -1,0 +1,21 @@
+[package]
+name = "generic-storage-msf"
+version = "0.1.0"
+edition = "2021"
+description = "Generic storage with multiple serialization formats (Borsh, Bincode, JSON)"
+
+[workspace]
+
+[dependencies]
+borsh = { version = "1.5", features = ["derive"] }
+wincode = { version = "0.5", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "serializers"
+harness = false
