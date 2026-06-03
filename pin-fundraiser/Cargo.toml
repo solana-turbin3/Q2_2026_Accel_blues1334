@@ -1,0 +1,37 @@
+[package]
+name = "pinocchio-fundraiser"
+version = "0.1.0"
+edition = "2021"
+description = "Token fundraiser program ported from Anchor to Pinocchio, optimized for compute units"
+
+# Standalone crate: this Pinocchio port lives inside the existing Anchor
+# `accel_anchor-esrow` workspace but is built independently (different
+# toolchain/profile), so we exclude it from the parent workspace.
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+# Enable the BPF entrypoint only when building the on-chain program.
+# Keeps the crate usable as a library (e.g. for clients) without the
+# global entrypoint/allocator/panic-handler symbols.
+default = ["bpf-entrypoint"]
+bpf-entrypoint = []
+
+[dependencies]
+pinocchio = { version = "0.11.1", features = ["cpi"] }
+pinocchio-system = "0.6.1"
+pinocchio-token = "0.6.0"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1

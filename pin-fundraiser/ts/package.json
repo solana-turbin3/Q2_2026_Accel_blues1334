@@ -1,0 +1,20 @@
+{
+  "name": "pinocchio-fundraiser-ts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:litesvm": "tsx test/litesvm.test.ts",
+    "devnet": "tsx devnet/run-devnet.ts"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.98.0",
+    "litesvm": "^0.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

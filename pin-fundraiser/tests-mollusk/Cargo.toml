@@ -1,0 +1,17 @@
+[workspace]
+
+[package]
+name = "tests-mollusk"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+
+[dev-dependencies]
+mollusk-svm = "0.13.1"
+mollusk-svm-programs-token = "0.13.1"
+solana-account = "3.4.0"
+solana-instruction = "3.2.0"
+solana-pubkey = { version = "4.1.0", features = ["curve25519"] }
+solana-sdk-ids = "3.1.0"
