@@ -1,0 +1,468 @@
+{
+  "address": "5ENTKY4nGmnwAvcEM3xnE8UeAaB4K3UFcgw995cfhwbS",
+  "metadata": {
+    "name": "nft_core_staking",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Metaplex Core NFT staking program with separate claim_rewards and collection-level stats (Anchor 1.0.2)"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "docs": [
+        "Create the per-collection staking config and rewards mint."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "docs": [
+            "The Core collection these stake settings apply to."
+          ]
+        },
+        {
+          "name": "update_authority",
+          "docs": [
+            "written directly here; only used to validate the collection."
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true
+        },
+        {
+          "name": "rewards_mint",
+          "docs": [
+            "Rewards token mint; mint authority is the `config` PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "rewards_bps",
+          "type": "u16"
+        },
+        {
+          "name": "freeze_period",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "create_collection",
+      "docs": [
+        "Create a Core collection owned (update authority) by the program PDA,",
+        "seeded with a `total_staked` statistics attribute."
+      ],
+      "discriminator": [
+        156,
+        251,
+        92,
+        54,
+        233,
+        2,
+        16,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "docs": [
+            "The collection account to create (a fresh keypair, must sign)."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "update_authority",
+          "docs": [
+            "signer for later plugin mutations."
+          ]
+        },
+        {
+          "name": "mpl_core_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "mint_asset",
+      "docs": [
+        "Mint a Core asset into the collection (helper for demos / tests)."
+      ],
+      "discriminator": [
+        84,
+        175,
+        211,
+        156,
+        56,
+        250,
+        104,
+        118
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset",
+          "docs": [
+            "The asset account to create (a fresh keypair, must sign)."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "update_authority"
+        },
+        {
+          "name": "mpl_core_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "docs": [
+        "Stake an asset (freeze + tag + increment collection counter)."
+      ],
+      "discriminator": [
+        206,
+        176,
+        202,
+        18,
+        200,
+        209,
+        179,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "config"
+        },
+        {
+          "name": "update_authority"
+        },
+        {
+          "name": "mpl_core_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_rewards",
+      "docs": [
+        "Claim accrued rewards without unstaking (does not affect the freeze period)."
+      ],
+      "discriminator": [
+        4,
+        144,
+        132,
+        71,
+        116,
+        23,
+        151,
+        80
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "config"
+        },
+        {
+          "name": "update_authority"
+        },
+        {
+          "name": "rewards_mint",
+          "writable": true
+        },
+        {
+          "name": "user_rewards_ata",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unstake",
+      "docs": [
+        "Unstake an asset (enforce freeze period, pay rewards, thaw, decrement counter)."
+      ],
+      "discriminator": [
+        90,
+        95,
+        107,
+        42,
+        205,
+        124,
+        50,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "config"
+        },
+        {
+          "name": "update_authority"
+        },
+        {
+          "name": "rewards_mint",
+          "writable": true
+        },
+        {
+          "name": "user_rewards_ata",
+          "writable": true
+        },
+        {
+          "name": "mpl_core_program"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "docs": [
+        "Per-collection staking configuration. Also the mint authority of the",
+        "collection's rewards token.",
+        "",
+        "PDA seeds: `[b\"config\", collection]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewards_bps",
+            "docs": [
+              "Reward rate, in basis points, expressed as \"reward tokens per staked day\".",
+              "Tokens minted per whole staked day = `rewards_bps / 10_000` (scaled by mint decimals)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "freeze_period",
+            "docs": [
+              "Minimum staking duration, in days, before an asset may be unstaked."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "rewards_bump",
+            "docs": [
+              "Bump for the rewards mint PDA."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump for this config PDA."
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidOwner",
+      "msg": "The signer is not the owner of the asset"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidCollection",
+      "msg": "The asset does not belong to the provided collection"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidUpdateAuthority",
+      "msg": "The collection update authority does not match the expected PDA"
+    },
+    {
+      "code": 6003,
+      "name": "AlreadyStaked",
+      "msg": "The asset is already staked"
+    },
+    {
+      "code": 6004,
+      "name": "AssetNotStaked",
+      "msg": "The asset is not currently staked"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidTimestamp",
+      "msg": "A stored timestamp attribute could not be parsed"
+    },
+    {
+      "code": 6006,
+      "name": "FreezePeriodNotElapsed",
+      "msg": "The minimum freeze period has not elapsed yet"
+    },
+    {
+      "code": 6007,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidCollectionStats",
+      "msg": "The collection statistics attribute is missing or malformed"
+    }
+  ],
+  "constants": [
+    {
+      "name": "CONFIG_SEED",
+      "docs": [
+        "PDA seed prefixes."
+      ],
+      "type": "bytes",
+      "value": "[99, 111, 110, 102, 105, 103]"
+    },
+    {
+      "name": "REWARDS_MINT_SEED",
+      "type": "bytes",
+      "value": "[114, 101, 119, 97, 114, 100, 115, 95, 109, 105, 110, 116]"
+    },
+    {
+      "name": "UPDATE_AUTHORITY_SEED",
+      "type": "bytes",
+      "value": "[117, 112, 100, 97, 116, 101, 95, 97, 117, 116, 104, 111, 114, 105, 116, 121]"
+    }
+  ]
+}
